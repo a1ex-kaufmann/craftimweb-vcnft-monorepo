@@ -1,0 +1,9 @@
+{
+	"name": "Certificate",
+	"description": "Certificate with verifiable credentials",
+	"image": "ipfs://QmST89BnnrbXFk8UwwpvpBh8VNe8GB7YpTZZ2zXWxHe3dV",
+	"properties": {
+		"Degree": "Bachelor",
+		"Rarity": "Rare"
+	}
+}
