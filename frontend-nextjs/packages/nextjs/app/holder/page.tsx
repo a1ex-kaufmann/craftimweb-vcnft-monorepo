@@ -10,62 +10,66 @@ const Home: NextPage = () => {
   const { address: connectedAddress } = useAccount();
 
   return (
-    <>
-      <div className="flex items-center flex-col flex-grow pt-10">
-        <div className="px-5">
-          <h1 className="text-center">
-            <span className="block text-2xl mb-2">Welcome to</span>
-            <span className="block text-4xl font-bold">Scaffold-ETH 2</span>
-          </h1>
-          <div className="flex justify-center items-center space-x-2 flex-col sm:flex-row">
-            <p className="my-2 font-medium">Connected Address:</p>
-            <Address address={connectedAddress} />
-          </div>
-
-          <p className="text-center text-lg">
-            Get started by editing{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              packages/nextjs/app/page.tsx
-            </code>
-          </p>
-          <p className="text-center text-lg">
-            Edit your smart contract{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              YourContract.sol
-            </code>{" "}
-            in{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              packages/hardhat/contracts
-            </code>
-          </p>
-        </div>
-
-        <div className="flex-grow bg-base-300 w-full mt-16 px-8 py-12">
-          <div className="flex justify-center items-center gap-12 flex-col sm:flex-row">
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <BugAntIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Tinker with your smart contract using the{" "}
-                <Link href="/debug" passHref className="link">
-                  Debug Contracts
-                </Link>{" "}
-                tab.
-              </p>
-            </div>
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <MagnifyingGlassIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Explore your local transactions with the{" "}
-                <Link href="/blockexplorer" passHref className="link">
-                  Block Explorer
-                </Link>{" "}
-                tab.
-              </p>
-            </div>
-          </div>
-        </div>
+    <div className=" flex flex-col max-w-7xl justify-center m-6 bg-base-300 p-4 rounded-xl">
+      {/* Scan your QR button */}
+      <div className="flex justify-center">
+        <button className="btn mt-0 my-4 w-2/5 hover:bg-blue-400 hover:text-gray-200">
+          Scan your QR
+        </button>
       </div>
-    </>
+      {/* !Scan your QR button */}
+      <table className="table-auto w-full bg-base-100">
+        <thead>
+          <tr className="border-2 border-b-0 border-r-0 border-collapse">
+            <th colSpan="2" className="w-1/2 px-6 py-4 border-r-2 text-lg text-center">
+              About Organization
+            </th>
+            <th colSpan="2" className="w-1/2 px-6 py-4 border-r-2 text-lg text-center">
+              Certificate Info
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <tr className="border-2 border-b-0 border-r-0 border-collapse">
+            <td className="w-2/12 px-2 py-2 text-center border-r-2">Institute Name</td>
+            {/* placeholder */}
+            <td className="w-4/12 px-2 py-2 text-center border-r-2"></td>
+            <td className="w-2/12 px-2 py-2 text-center border-r-2">First Name</td>
+            {/* placeholder */}
+            <td className="w-4/12 px-2 py-2 text-center border-r-2"></td>
+          </tr>
+
+          <tr className="border-2 border-b-0 border-r-0 border-collapse">
+            <td className="w-2/12 px-2 py-2 text-center border-r-2">Course</td>
+            {/* placeholder */}
+            <td className="w-4/12 px-2 py-2 text-center border-r-2"></td>
+            <td className="w-2/12 px-2 py-2 text-center border-r-2">Last Name</td>
+            {/* placeholder */}
+            <td className="w-4/12 px-2 py-2 text-center border-r-2"></td>
+          </tr>
+
+          <tr className="border-2 border-b-0 border-r-0 border-collapse">
+            <td className="w-2/12 px-2 py-2 text-center border-r-2">Degree</td>
+            {/* placeholder */}
+            <td className="w-4/12 px-2 py-2 text-center border-r-2"></td>
+            <td className="w-2/12 px-2 py-2 text-center border-r-2">Certificate ID</td>
+            {/* placeholder */}
+            <td className="w-4/12 px-2 py-2 text-center border-r-2"></td>
+          </tr>
+
+          <tr className="border-2 border-b-0 border-r-0 border-collapse">
+            <td className="w-2/12 px-2 py-2 text-center border-r-2 border-b-2">Awarded On</td>
+            {/* placeholder */}
+            <td className="w-4/12 px-2 py-2 text-center border-r-2 border-b-2"></td>
+            <td className="w-2/12 px-2 py-2 text-center border-r-2 border-b-2">Status</td>
+            {/* placeholder */}
+            <td className="w-4/12 px-2 py-2 text-center border-r-2 border-b-2"></td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
   );
 };
 

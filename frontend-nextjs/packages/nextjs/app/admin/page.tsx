@@ -47,93 +47,72 @@ const Admin: NextPage = () => {
   };
 
   return (
-    <>
-      <div className="flex items-center flex-col flex-grow pt-10">
-        <div className="px-5">
-          <h1 className="text-center">
-            <span className="block text-2xl mb-2">Welcome to </span>
-            
-          </h1>
-        </div>
+    <div className="flex flex-col justify-around bg-base-300 rounded-2xl">
 
-        <div className="flex-grow bg-base-300 w-full mt-4 px-8 py-8">
-          <div className="flex justify-center items-center gap-0 flex-col sm:flex-row">
-            <div className="flex flex-col bg-base-100 px-16 py-10 text-center items-center max-w-xs rounded-3xl">
-            <h2 className="text-2xl font-semibold mb-4">Organisation Info</h2>
-            <input
-              type="text"
-              placeholder="Institution name"
-              name="institutionName"
-              value={formData.institutionName}
-              onChange={handleInputChange}
-              className="input input-bordered w-full mb-4"
-            />
-            <input
-              type="text"
-              placeholder="Course"
-              name="course"
-              value={formData.course}
-              onChange={handleInputChange}
-              className="input input-bordered w-full mb-4"
-            />
-            <input
-              type="text"
-              placeholder="Degree"
-              name="degree"
-              value={formData.degree}
-              onChange={handleInputChange}
-              className="input input-bordered w-full mb-4"
-            />
-            <input
-              type="date"
-              placeholder="Awarded on"
-              name="awardedOn"
-              value={formData.awardedOn}
-              onChange={handleInputChange}
-              className="input input-bordered w-full mb-4"
-            />
-            <button onClick={handleClear} className="btn btn-secondary w-full">Clear</button>
-            </div>
-            <div className="flex flex-col bg-base-100 px-16 py-10 text-center items-center max-w-xs rounded-3xl">
-            <h2 className="text-2xl font-semibold mb-4">Holder Info</h2>
-            <input
-              type="text"
-              placeholder="First Name"
-              name="firstName"
-              value={formData.firstName}
-              onChange={handleInputChange}
-              className="input input-bordered w-full mb-4"
-            />
-            <input
-              type="text"
-              placeholder="Last Name"
-              name="lastName"
-              value={formData.lastName}
-              onChange={handleInputChange}
-              className="input input-bordered w-full mb-4"
-            />
-            <input
-              type="text"
-              placeholder="Certificate ID"
-              name="certificateId"
-              value={formData.certificateId}
-              onChange={handleInputChange}
-              className="input input-bordered w-full mb-4"
-            />
-            <input
-              type="text"
-              placeholder="Wallet Address"
-              name="walletAddress"
-              value={formData.walletAddress}
-              onChange={handleInputChange}
-              className="input input-bordered w-full mb-4"
-            />
-            <button onClick={handleIssueCertificate} className="btn btn-primary w-full">Issue Certificate</button>
-            </div>
+      <div className="m-2 mt-4 flex justify-center">
+        <input type="search" className="w-2/3" />
+
+      </div>
+
+      <div className="flex justify-center">
+
+        <table className="table-auto">
+          <thead>
+            <tr>
+              <th>
+                ID
+              </th>
+              <th>
+                Issuer Name
+              </th>
+              <th>
+                Issuer Wallet Address
+              </th>
+              <th>
+                State
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <td>1</td>
+            <td>VTB</td>
+            <td>guiyhapsifndogji9823onlfg</td>
+            <td>OK</td>
+          </tbody>
+
+        </table>
+      </div>
+
+      <div className="p-4 flex flex-row justify-center border-2">
+        <div className="w-2/3 flex flex-col flex-center justify-center border-2 border-red-500">
+          <form className="flex flex-col flex-center justify-center">
+            <label className="p-2 pl-4">
+              Issuer Name
+            </label>
+            <input placeholder="Issuer Name"
+              className="input rounded-lg h-10" />
+          </form>
+
+          <form className="mt-0 flex flex-col flex-center justify-center">
+            <label className="p-2 pl-4">
+              Issuer Wallet Address
+            </label>
+            <input placeholder="Address"
+              className="input rounded-lg h-10" />
+          </form>
+
+          <div className="mt-4 flex justify-center">
+            <button 
+              type="submit"
+              className="btn w-full text-base hover:bg-blue-400 hover:text-gray-200 h-10">
+                Add Issuer
+            </button>
           </div>
+
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

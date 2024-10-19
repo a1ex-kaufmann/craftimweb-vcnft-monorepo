@@ -5,68 +5,186 @@ import type { NextPage } from "next";
 import { useAccount } from "wagmi";
 import { BugAntIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { Address } from "~~/components/scaffold-eth";
+import { useState } from "react";
 
-const Home: NextPage = () => {
+const Admin: NextPage = () => {
   const { address: connectedAddress } = useAccount();
 
-  return (
-    <>
-      <div className="flex items-center flex-col flex-grow pt-10">
-        <div className="px-5">
-          <h1 className="text-center">
-            <span className="block text-2xl mb-2">Welcome to</span>
-            <span className="block text-4xl font-bold">Scaffold-ETH 2</span>
-          </h1>
-          <div className="flex justify-center items-center space-x-2 flex-col sm:flex-row">
-            <p className="my-2 font-medium">Connected Address:</p>
-            <Address address={connectedAddress} />
-          </div>
+  const [formData, setFormData] = useState({
+    institutionName: "",
+    course: "",
+    degree: "",
+    awardedOn: "",
+    firstName: "",
+    lastName: "",
+    certificateId: "",
+    walletAddress: "",
+  });
 
-          <p className="text-center text-lg">
-            Get started by editing{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              packages/nextjs/app/page.tsx
-            </code>
-          </p>
-          <p className="text-center text-lg">
-            Edit your smart contract{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              YourContract.sol
-            </code>{" "}
-            in{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              packages/hardhat/contracts
-            </code>
-          </p>
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prevState => ({
+      ...prevState,
+      [name]: value
+    }));
+  };
+
+  const handleClear = () => {
+    setFormData({
+      institutionName: "",
+      course: "",
+      degree: "",
+      awardedOn: "",
+      firstName: "",
+      lastName: "",
+      certificateId: "",
+      walletAddress: "",
+    });
+  };
+
+  const handleIssueCertificate = () => {
+    console.log("Issuing certificate with data:", formData);
+  };
+
+  return (
+    <div className="flex flex-row justify-center">
+      <div className="flex flex-row justify-around bg-base-300 rounded-3xl w-full max-w-screen-xl">
+        <div className="p-6 py-3 align-center w-full max-w-screen-2xl">
+          <h2 className="text-center mb-0 text-xl font-bold">
+            Organization Info
+          </h2>
+          {/* Issuer Name field */}
+          <form className="pt-2">
+            <div className="flex flex-col justify-start">
+              <label className="mx-2 text-center">
+                Issuer Name
+              </label>
+              <input type="text"
+                placeholder=""
+                name="institutionName"
+                value={formData.institutionName}
+                onChange={handleInputChange}
+                className="input mx-2 my-1 p-1 rounded-md h-10"
+              />
+            </div>
+            {/* Course field */}
+            <div className="flex flex-col justify-start">
+              <label className="mx-2 text-center">
+                Course
+              </label>
+              <input type="text"
+                placeholder=""
+                name="course"
+                value={formData.course}
+                onChange={handleInputChange}
+                className="input mx-2 my-1 p-1 rounded-md h-10"
+              />
+            </div>
+            {/* Degree field */}
+            <div className="flex flex-col justify-start">
+              <label className="mx-2 text-center">
+                Degree
+              </label>
+              <input type="text"
+                placeholder=""
+                name="Degree"
+                value={formData.degree}
+                onChange={handleInputChange}
+                className="input mx-2 my-1 p-1 rounded-md h-10"
+              />
+            </div>
+            {/* Awarded_On field */}
+            <div className="flex flex-col justify-start">
+              <label className="mx-2 text-center">
+                Awarded On
+              </label>
+              <input type="date"
+                placeholder=""
+                name="Awarded On"
+                value={formData.awardedOn}
+                onChange={handleInputChange}
+                className="input mx-2 my-1 p-1 rounded-md h-10"
+              />
+            </div>
+            <div className="flex flex-col justify-center my-2 p-2">
+              <button onClick={handleClear}
+                className="btn hover:bg-blue-400 hover:text-gray-100">
+                  Clear
+              </button>
+            </div>
+          </form>
         </div>
 
-        <div className="flex-grow bg-base-300 w-full mt-16 px-8 py-12">
-          <div className="flex justify-center items-center gap-12 flex-col sm:flex-row">
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <BugAntIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Tinker with your smart contract using the{" "}
-                <Link href="/debug" passHref className="link">
-                  Debug Contracts
-                </Link>{" "}
-                tab.
-              </p>
+        {/* --------------------------------------------------------------- */}
+
+        <div className="p-6 py-3 align-center w-full max-w-screen-2xl">
+          <h2 className="text-center mb-0 text-xl font-bold">
+            Holder Info
+          </h2>
+          <form className="pt-2">
+            {/* First Name field */}
+            <div className="flex flex-col justify-start">
+              <label className="mx-2 text-center">
+                First Name
+              </label>
+              <input type="text"
+                placeholder=""
+                name="holderFirstName"
+                value={formData.firstName}
+                onChange={handleInputChange}
+                className="input mx-2 my-1 p-1 rounded-md h-10"
+              />
             </div>
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <MagnifyingGlassIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Explore your local transactions with the{" "}
-                <Link href="/blockexplorer" passHref className="link">
-                  Block Explorer
-                </Link>{" "}
-                tab.
-              </p>
+            {/* Last Name field */}
+            <div className="flex flex-col justify-start">
+              <label className="mx-2 text-center">
+                Last Name
+              </label>
+              <input type="text"
+                placeholder=""
+                name="holderLastName"
+                value={formData.lastName}
+                onChange={handleInputChange}
+                className="input mx-2 my-1 p-1 rounded-md h-10"
+              />
             </div>
-          </div>
+            {/* Cert ID field */}
+            <div className="flex flex-col justify-start">
+              <label className="mx-2 text-center">
+                Certification ID
+              </label>
+              <input type="text"
+                placeholder=""
+                name="holderCertId"
+                value={formData.certificateId}
+                onChange={handleInputChange}
+                className="input mx-2 my-1 p-1 rounded-md h-10"
+              />
+            </div>
+            {/* Holder Wallet field */}
+            <div className="flex flex-col justify-start">
+              <label className="mx-2 text-center">
+                Wallet Address
+              </label>
+              <input type="text"
+                placeholder=""
+                name="holderWallet"
+                value={formData.awardedOn}
+                onChange={handleInputChange}
+                className="input mx-2 my-1 p-1 rounded-md h-10"
+              />
+            </div>
+            <div className="flex flex-col justify-center my-2 p-2">
+                <button onClick={handleIssueCertificate}
+                  className="btn hover:bg-blue-400 hover:text-gray-100">
+                    Issue Certificate
+                </button>
+              </div>
+          </form>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
-export default Home;
+export default Admin;
