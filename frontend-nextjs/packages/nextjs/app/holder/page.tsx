@@ -10,10 +10,11 @@ const Home: NextPage = () => {
   const { address: connectedAddress } = useAccount();
 
   return (
-    <div className=" flex flex-col max-w-7xl justify-center m-6 bg-base-300 p-4 rounded-xl">
+    <div className=" flex flex-col max-w-7xl justify-center m-6 bg-base-300 p-4 rounded-3xl">
       {/* Scan your QR button */}
       <div className="flex justify-center">
         <button className="btn mt-0 my-4 w-2/5 hover:bg-blue-400 hover:text-gray-200">
+          <img src="images/qr.svg" className="h-6"/>
           Scan your QR
         </button>
       </div>

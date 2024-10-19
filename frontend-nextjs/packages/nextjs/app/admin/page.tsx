@@ -47,45 +47,88 @@ const Admin: NextPage = () => {
   };
 
   return (
-    <div className="flex flex-col justify-around bg-base-300 rounded-2xl">
+    <div className="flex flex-col justify-around bg-base-300 rounded-3xl">
 
       <div className="m-2 mt-4 flex justify-center">
-        <input type="search" className="w-2/3" />
-
+        <input type="search" placeholder="Find Issuer" className="input h-10 w-96 rounded-lg" />
       </div>
 
-      <div className="flex justify-center">
+      <div className="flex justify-center overflow-auto px-16 max-h-64 border-b-2">
 
-        <table className="table-auto">
+        <table className="table-auto w-full">
           <thead>
-            <tr>
-              <th>
+            <tr className="border-2 border-b-0 text-center">
+              <th className="px-4 py-2 border-r-2 w-6">
                 ID
               </th>
-              <th>
+              <th className="px-4 py-2 border-r-2">
                 Issuer Name
               </th>
-              <th>
+              <th className="px-4 py-2 border-r-2">
                 Issuer Wallet Address
               </th>
-              <th>
+              <th className="px-4 py-2 border-r-2 w-6">
                 State
               </th>
             </tr>
           </thead>
 
           <tbody>
-            <td>1</td>
-            <td>VTB</td>
-            <td>guiyhapsifndogji9823onlfg</td>
-            <td>OK</td>
+            <tr className="border-2 border-b-0 text-center">
+              <td className="px-4 py-2">1</td>
+              <td className="px-4 py-2">VTB</td>
+              <td className="px-4 py-2">guiyhapsifndogji9823onlfg</td>
+              <td className="px-4 py-2">
+                <input type="checkbox" className="h-4 w-4" />
+              </td>
+            </tr>
+            <tr className="border-2 border-b-0 text-center">
+              <td className="px-4 py-2">2</td>
+              <td className="px-4 py-2">Java Education</td>
+              <td className="px-4 py-2">guiyhapsifndogji9823onlfg</td>
+              <td className="px-4 py-2">
+                <input type="checkbox" className="h-4 w-4" />
+              </td>
+            </tr>
+            <tr className="border-2 border-b-0 text-center">
+              <td className="px-4 py-2">3</td>
+              <td className="px-4 py-2">MIT</td>
+              <td className="px-4 py-2">guiyhapsifndogji9823onlfg</td>
+              <td className="px-4 py-2">
+                <input type="checkbox" className="h-4 w-4" />
+              </td>
+            </tr>
+            <tr className="border-2 border-b-0 text-center">
+              <td className="px-4 py-2">4</td>
+              <td className="px-4 py-2">MIPT</td>
+              <td className="px-4 py-2">guiyhapsifndogji9823onlfg</td>
+              <td className="px-4 py-2">
+                <input type="checkbox" className="h-4 w-4" />
+              </td>
+            </tr>
+            <tr className="border-2 border-b-0 text-center">
+              <td className="px-4 py-2">5</td>
+              <td className="px-4 py-2">Coursera</td>
+              <td className="px-4 py-2">guiyhapsifndogji9823onlfg</td>
+              <td className="px-4 py-2">
+                <input type="checkbox" className="h-4 w-4" />
+              </td>
+            </tr>
+            <tr className="border-2 border-b-0 text-center">
+              <td className="px-4 py-2">6</td>
+              <td className="px-4 py-2">AWS</td>
+              <td className="px-4 py-2">guiyhapsifndogji9823onlfg</td>
+              <td className="px-4 py-2">
+                <input type="checkbox" className="h-4 w-4" />
+              </td>
+            </tr>
           </tbody>
 
         </table>
       </div>
 
-      <div className="p-4 flex flex-row justify-center border-2">
-        <div className="w-2/3 flex flex-col flex-center justify-center border-2 border-red-500">
+      <div className="p-4 pt-0 flex flex-row justify-center w-full">
+        <div className="w-96 flex flex-col justify-center">
           <form className="flex flex-col flex-center justify-center">
             <label className="p-2 pl-4">
               Issuer Name
@@ -109,7 +152,6 @@ const Admin: NextPage = () => {
                 Add Issuer
             </button>
           </div>
-
         </div>
       </div>
     </div>
