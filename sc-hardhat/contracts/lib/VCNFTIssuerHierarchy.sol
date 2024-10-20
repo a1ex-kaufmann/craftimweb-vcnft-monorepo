@@ -17,12 +17,15 @@ abstract contract VCNFTIssuerHierarchy is Initializable, OwnableUpgradeable {
     uint256 internal constant _ISSUER_STATUS_PARENT_DISABLED = 3;
 
     struct IssuerNode {
-        address parent;
+        address wallet;
         uint256 status;
+        address parent;
         address[] children;
     }
 
     mapping(address => IssuerNode) internal _issuers;
+    EnumerableSet.AddressSet _issuerSet;
+    mapping(uint256 => address) public tokenIssuer;
 
     event AddChildIssuer(address indexed parent, address indexed child);
     event SetIssuerStatus(address indexed sender, address indexed issuer, uint256 status);
@@ -33,8 +36,9 @@ abstract contract VCNFTIssuerHierarchy is Initializable, OwnableUpgradeable {
 
     function __VCNFTIssuerHierarchy_init(address initialIssuer_) internal initializer {
         _issuers[address(0)] = IssuerNode({
-            parent: address(0),
+            wallet: address(0),
             status: _ISSUER_STATUS_ACTIVE,
+            parent: address(0),
             children: new address[](0)
         });
 
@@ -68,12 +72,18 @@ abstract contract VCNFTIssuerHierarchy is Initializable, OwnableUpgradeable {
         assert(_issuers[child_].parent == address(0));
         assert(_issuers[child_].children.length == 0);
 
-        _issuers[child_].parent = parent_;
-        _issuers[child_].status = _ISSUER_STATUS_ACTIVE;
+        _issuers[child_] = IssuerNode({
+            wallet: child_,
+            status: _ISSUER_STATUS_ACTIVE,
+            parent: parent_,
+            children: new address[](0)
+        });
+        _issuerSet.add(child_);
+
         _issuers[parent_].children.push(child_);
 
         emit AddChildIssuer({
-            parent: msg.sender,
+            parent: parent_,
             child: child_
         });
     }
@@ -126,5 +136,37 @@ abstract contract VCNFTIssuerHierarchy is Initializable, OwnableUpgradeable {
         return calculateIssuerStatus(account_) == _ISSUER_STATUS_ACTIVE;
     }
 
+    function fetchIssuers(uint256 cursor_, uint256 howMany_) external view returns (IssuerNode[] memory values, uint256 newCursor) {
+
+        (address[] memory addresses, uint256 newPaginationCursor) = _fetchWithPagination(_issuerSet, cursor_, howMany_);
+
+        values = new IssuerNode[](addresses.length);
+        for (uint256 i = 0; i < addresses.length; i++) {
+            values[i] = _issuers[addresses[i]];
+        }
+        return (values, newPaginationCursor);
+    }
+
+    function _fetchWithPagination(
+        EnumerableSet.AddressSet storage set,
+        uint256 cursor,
+        uint256 howMany
+    ) internal view returns (address[] memory values, uint256 newCursor) {
+        uint256 length = howMany;
+
+        // TODO: if cursor currently at the end of the set, return empty array
+        if (length > set.length() - cursor) {
+            length = set.length() - cursor;
+        }
+
+        values = new address[](length);
+        for (uint256 i = 0; i < length; i++) {
+            values[i] = set.at(cursor + i);
+        }
+
+        return (values, cursor + length);
+    }
+
+    uint256[49] private __gap;
 
 }

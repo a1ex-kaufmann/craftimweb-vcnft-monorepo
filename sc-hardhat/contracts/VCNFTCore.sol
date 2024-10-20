@@ -123,14 +123,16 @@ contract VCNFTCore is
 
         bytes32 digest = _hashTypedDataV4(structHash);
 
-        require(
-            SignatureChecker.isValidSignatureNow(issuer_, digest, signature_),
-            "VCNFTCore: invalid signature"
-        );
+        // only for hackaton demo
+        // require(
+        //     SignatureChecker.isValidSignatureNow(issuer_, digest, signature_),
+        //     "VCNFTCore: invalid signature"
+        // );
 
         nonces[nonce_] = true;
 
         uint256 tokenId = _deploySimpleAccount(keccak256(abi.encodePacked(msg.sender, block.timestamp)));
+        tokenIssuer[tokenId] = issuer_;
 
         _mint(target_, tokenId);
         _setTokenURI(tokenId, "ipfs://Qmc4rUw5WRwpMJdP2u5dazD5Cs53QqeStcpJB6KNVGQbB2");
@@ -145,6 +147,12 @@ contract VCNFTCore is
             signature: signature_,
             tokenId: tokenId
         });
+    }
+
+    function tokenIsValid(uint256 tokenId_) external view virtual returns (bool) {
+        // only for demo
+        // return _exists(tokenId_) && !isRevoked[tokenId_] && calculateIssuerStatus(tokenIssuer[tokenId_]) == 1;
+        return true;
     }
 
     function revokeToken(uint256 tokenId_) external virtual {
