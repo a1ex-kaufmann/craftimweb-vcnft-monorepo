@@ -7,8 +7,8 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   421614: {
     VCNFTCore: {
-      address: "0xCF3DAA1CFfEDdb7243d7BF93A4Be95C95E5d5215",
-      abi: [
+      address: "0x93A6eF7C6b49E406d7f345A65B5eE5353f3202d9",
+      "abi": [
         {
           "inputs": [],
           "stateMutability": "nonpayable",
@@ -676,6 +676,57 @@ const deployedContracts = {
         {
           "inputs": [
             {
+              "internalType": "uint256",
+              "name": "cursor_",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "howMany_",
+              "type": "uint256"
+            }
+          ],
+          "name": "fetchIssuers",
+          "outputs": [
+            {
+              "components": [
+                {
+                  "internalType": "address",
+                  "name": "wallet",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "status",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "address",
+                  "name": "parent",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address[]",
+                  "name": "children",
+                  "type": "address[]"
+                }
+              ],
+              "internalType": "struct VCNFTIssuerHierarchy.IssuerNode[]",
+              "name": "values",
+              "type": "tuple[]"
+            },
+            {
+              "internalType": "uint256",
+              "name": "newCursor",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
               "internalType": "address",
               "name": "issuer_",
               "type": "address"
@@ -687,13 +738,18 @@ const deployedContracts = {
               "components": [
                 {
                   "internalType": "address",
-                  "name": "parent",
+                  "name": "wallet",
                   "type": "address"
                 },
                 {
                   "internalType": "uint256",
                   "name": "status",
                   "type": "uint256"
+                },
+                {
+                  "internalType": "address",
+                  "name": "parent",
+                  "type": "address"
                 },
                 {
                   "internalType": "address[]",
@@ -1150,6 +1206,44 @@ const deployedContracts = {
               "internalType": "string",
               "name": "",
               "type": "string"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "tokenId_",
+              "type": "uint256"
+            }
+          ],
+          "name": "tokenIsValid",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "name": "tokenIssuer",
+          "outputs": [
+            {
+              "internalType": "address",
+              "name": "",
+              "type": "address"
             }
           ],
           "stateMutability": "view",

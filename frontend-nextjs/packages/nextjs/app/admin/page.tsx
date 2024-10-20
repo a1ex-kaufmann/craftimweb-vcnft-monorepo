@@ -3,11 +3,12 @@
 import Link from "next/link";
 import type { NextPage } from "next";
 import React, { useState, useEffect } from 'react';
-import { useAccount } from "wagmi";
+import { useAccount, useWalletClient } from "wagmi";
 import { useScaffoldContract } from "~~/hooks/scaffold-eth";
 
 const Admin: NextPage = () => {
   const { address: connectedAddress } = useAccount();
+  const { data: walletClient } = useWalletClient();
   const [issuers, setIssuers] = useState([]);
   const [cursor, setCursor] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
@@ -15,22 +16,23 @@ const Admin: NextPage = () => {
 
   const { data: vcNFTIssuerHierarchy } = useScaffoldContract({
     contractName: "VCNFTCore",
+    walletClient
   });
 
-  useEffect(() => {
-    const fetchIssuers = async () => {
-      if (vcNFTIssuerHierarchy) {
-        try {
-          const [fetchedIssuers, newCursor] = await vcNFTIssuerHierarchy.read.fetchIssuers([0, 10]);
-          const issuerList: any = fetchedIssuers;
-          console.log(issuerList)
-          setIssuers(issuerList);
-        } catch (error) {
-          console.error("error:", error);
-        }
-      }
-    };
 
+  const fetchIssuers = async () => {
+    if (vcNFTIssuerHierarchy) {
+      try {
+        const [fetchedIssuers, newCursor] = await vcNFTIssuerHierarchy.read.fetchIssuers([0, 10]);
+        const issuerList: any = fetchedIssuers;
+        setIssuers(issuerList);
+      } catch (error) {
+        console.error("err:", error);
+      }
+    }
+  };
+
+  useEffect(() => {
     fetchIssuers();
   }, [vcNFTIssuerHierarchy, cursor]);
 
@@ -39,8 +41,18 @@ const Admin: NextPage = () => {
   };
 
   const handleAddIssuer = async (e) => {
-    //
-  }
+    e.preventDefault();
+    if (newIssuerAddress && vcNFTIssuerHierarchy) {
+      try {
+        await vcNFTIssuerHierarchy.write.addChildIssuer([newIssuerAddress]);
+
+        setNewIssuerAddress('');
+        fetchIssuers();
+      } catch (error) {
+        console.error("Error adding issuer:", error);
+      }
+    }
+  };
 
   const filteredIssuers = issuers.filter(elem => 
     elem.wallet.toLowerCase().includes(searchTerm.toLowerCase())
@@ -100,10 +112,12 @@ const Admin: NextPage = () => {
 
           <button 
             type="submit"
+            onClick={handleAddIssuer}
             className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             Add issuer
           </button>
+          
       </div>
     </div>
   );

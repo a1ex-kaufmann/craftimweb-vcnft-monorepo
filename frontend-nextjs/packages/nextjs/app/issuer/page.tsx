@@ -37,6 +37,8 @@ const Admin: NextPage = () => {
     }));
   };
 
+  const isSignatureValid = formData.signature.length === 132;
+
   const handleShowVC = () => {
     setIsModalOpen(true);
     // setFormData({
@@ -72,9 +74,11 @@ const Admin: NextPage = () => {
     const value = {
       issuer: "0xCF3DAA1CFfEDdb7243d7BF93A4Be95C95E5d5215",
       target: "0xCF3DAA1CFfEDdb7243d7BF93A4Be95C95E5d5215",
-      merkleRoot: "0x0000000000000000000000000000000000000000000000000000000000000000",
-      nonce: 1,
+      merkleRoot: ethers.hexlify(ethers.randomBytes(32)),
+      nonce: ethers.hexlify(ethers.randomBytes(32)),
     };
+
+    console.log(value);
 
     if (!walletClient) {
       console.error("Wallet client not available");
@@ -114,7 +118,7 @@ const Admin: NextPage = () => {
       "id": `urn:uuid:${formData.certificateId}`,
       "type": ["VerifiableCredential", "EducationCredential"],
       "issuer": {
-        "id": "did:example:123456789abcdefghi",
+        "id": `did:ethr:0x93A6eF7C6b49E406d7f345A65B5eE5353f3202d9`,
         "name": formData.institutionName
       },
       "issuanceDate": new Date().toISOString(),
@@ -146,10 +150,10 @@ const Admin: NextPage = () => {
         "https://www.w3.org/2018/credentials/v1",
         "https://www.w3.org/2018/credentials/examples/v1"
       ],
-      "id": `urn:uuid:${formData.certificateId}`,
+      "id": `https://craftimweb-vcnft.edinorogi.online/certid/:${formData.certificateId}`,
       "type": ["VerifiableCredential", "EducationCredential"],
       "issuer": {
-        "id": "did:example:123456789abcdefghi",
+        "id": `did:ethr:0x93A6eF7C6b49E406d7f345A65B5eE5353f3202d9`,
         "name": formData.institutionName
       },
       "issuanceDate": new Date().toISOString(),
@@ -281,7 +285,7 @@ const Admin: NextPage = () => {
             </div>
             <div className="flex flex-col justify-center my-2 p-2">
               <button onClick={handleShowVC}
-                className="btn hover:bg-blue-400 hover:text-gray-100">
+                className="btn hover:bg-blue-400 hover:text-gray-100" disabled={!isSignatureValid}> 
                   Show VC + VC-QR
               </button>
             </div>
@@ -359,7 +363,7 @@ const Admin: NextPage = () => {
               />
             </div>
             <div className="flex flex-col justify-center my-2 p-2">
-                <button onClick={handleIssueCertificate}
+                <button onClick={handleIssueCertificate} disabled={!isSignatureValid}
                   className="btn hover:bg-blue-400 hover:text-gray-100">
                     Issue Certificate
                 </button>
