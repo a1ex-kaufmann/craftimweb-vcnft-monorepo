@@ -3,9 +3,10 @@
 import React, { useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import type { NextPage } from "next";
-import { useAccount } from "wagmi";
+import { useAccount, useWalletClient } from "wagmi";
 import { BugAntIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { Address } from "~~/components/scaffold-eth";
+import { useScaffoldContract } from "~~/hooks/scaffold-eth";
 import dynamic from 'next/dynamic';
 
 // Динамический импорт QrReader, чтобы избежать проблем с SSR
@@ -15,6 +16,11 @@ const QrReader = dynamic(() => import('react-qr-reader').then(module => module.Q
 
 const Home: NextPage = () => {
   const { address: connectedAddress } = useAccount();
+  const { data: walletClient } = useWalletClient();
+  const { data: nftContract } = useScaffoldContract({
+    contractName: "VCNFTCore",
+    walletClient,
+  }); 
   const [scannerOpen, setScannerOpen] = useState(false);
   const [scannedData, setScannedData] = useState(null);
   const qrReaderRef: any = useRef(null);
@@ -37,6 +43,19 @@ const Home: NextPage = () => {
 
   const openScanner = () => {
     setScannerOpen(true);
+  };
+
+  const mintNFT = async () => {
+    const nonce: any = Math.floor(Math.random() * 100000000).toString();
+    const walletAddr: any = connectedAddress;
+
+    await nftContract?.write.mint([
+      "0xCF3DAA1CFfEDdb7243d7BF93A4Be95C95E5d5215",
+      walletAddr,
+      "0x0000000000000000000000000000000000000000000000000000000000000000",
+      nonce,
+      "0x0000000000000000000000000000000000000000000000000000000000000000"
+    ]);
   };
 
   const closeScanner = () => {
@@ -119,6 +138,15 @@ const Home: NextPage = () => {
           </tr>
         </tbody>
       </table>
+      <div className="flex justify-center py-4">
+        <button 
+          className="btn mt-0 my-4 w-2/5 hover:bg-blue-400 hover:text-gray-200"
+          onClick={mintNFT}
+          disabled={!scannedData}
+        >
+          Mint your VC NFT
+        </button>
+      </div>
     </div>
   );
 };
