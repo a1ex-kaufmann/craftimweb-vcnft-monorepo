@@ -4,7 +4,8 @@ This project is a blockchain-based digital certificate management system built u
 
 special from CraftimWeb team
 
-[hardhat readme](./sc-hardhat/README.md)
+[smart contracts readme](./sc-hardhat/README.md)
+[frontend readme](./frontend-nextjs/README.md)
 
 # Deployed
 

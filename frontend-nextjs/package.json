@@ -35,11 +35,22 @@
     "verify": "yarn workspace @se-2/hardhat verify"
   },
   "devDependencies": {
+    "@types/file-saver": "^2",
+    "@types/qrcode": "^1",
     "husky": "~8.0.3",
     "lint-staged": "~13.2.2"
   },
   "packageManager": "yarn@3.2.3",
   "engines": {
     "node": ">=18.18.0"
+  },
+  "dependencies": {
+    "@headlessui/react": "^2.1.10",
+    "@heroicons/react": "^2.1.5",
+    "ethers": "6.13.1",
+    "file-saver": "^2.0.5",
+    "jspdf": "^2.5.2",
+    "qrcode": "^1.5.4",
+    "react-qr-reader": "^3.0.0-beta-1"
   }
 }
