@@ -826,7 +826,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@heroicons/react@npm:^2.1.5, @heroicons/react@npm:~2.1.5":
+"@heroicons/react@npm:^2.1.5":
   version: 2.1.5
   resolution: "@heroicons/react@npm:2.1.5"
   peerDependencies:
@@ -2253,7 +2253,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@se-2/nextjs@workspace:packages/nextjs"
   dependencies:
-    "@heroicons/react": ~2.1.5
+    "@headlessui/react": ^2.1.10
+    "@heroicons/react": ^2.1.5
     "@rainbow-me/rainbowkit": 2.1.6
     "@tanstack/react-query": ~5.28.6
     "@trivago/prettier-plugin-sort-imports": ~4.1.1
@@ -2271,16 +2272,21 @@ __metadata:
     eslint-config-next: ~14.0.4
     eslint-config-prettier: ~8.5.0
     eslint-plugin-prettier: ~4.2.1
+    ethers: 6.13.1
+    file-saver: ^2.0.5
+    jspdf: ^2.5.2
     next: ~14.2.11
     next-nprogress-bar: ~2.3.13
     next-themes: ~0.3.0
     postcss: ~8.4.45
     prettier: ~2.8.4
+    qrcode: ^1.5.4
     qrcode.react: ~3.1.0
     react: ~18.3.1
     react-copy-to-clipboard: ~5.1.0
     react-dom: ~18.3.1
     react-hot-toast: ~2.4.0
+    react-qr-reader: ^3.0.0-beta-1
     tailwindcss: ~3.4.11
     type-fest: ~4.6.0
     typescript: 5.5.3
