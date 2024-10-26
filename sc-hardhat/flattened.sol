@@ -3871,7 +3871,7 @@ library MerkleProof {
 }
 
 
-// File contracts/lib/VCNFTMerkleTreeVerifier.sol
+// File contracts/lib/VCNFTVerifier.sol
 
 // Original license: SPDX_License_Identifier: UNLICENSED
 pragma solidity ^0.8.0;
@@ -3880,7 +3880,7 @@ pragma solidity ^0.8.0;
 
 // libs
 
-abstract contract VCNFTMerkleTreeVerifier is Initializable {
+abstract contract VCNFTVerifier is Initializable {
 
     struct VCData {
         uint256 id;
@@ -3888,7 +3888,7 @@ abstract contract VCNFTMerkleTreeVerifier is Initializable {
         bytes32 data;
     }
 
-    function __VCNFTMerkleTreeVerifier_init() internal initializer {}
+    function __VCNFTVerifier_init() internal initializer {}
         
 
     function verifyVCData(bytes32[] memory proof_, bytes32 root_, VCData memory vcData_) public view returns (bool) {
@@ -3896,7 +3896,7 @@ abstract contract VCNFTMerkleTreeVerifier is Initializable {
     }
 
     function verifyMerkleProof(bytes32[] memory proof_, bytes32 root_, bytes32 leaf_) public view returns (bool) {
-        require(root_ != bytes32(0), "VCNFTMerkleTreeVerifier: zero merkle root");
+        require(root_ != bytes32(0), "VCNFTVerifier: zero merkle root");
         return MerkleProof.verify(proof_, root_, leaf_);
     }
 
@@ -4098,7 +4098,7 @@ contract VCNFTCore is
     EIP712Upgradeable,
     VCNFTIssuerHierarchy,
     VCNFTAccountFactory,
-    VCNFTMerkleTreeVerifier
+    VCNFTVerifier
 {
     using Address for address payable;
 
@@ -4161,7 +4161,7 @@ contract VCNFTCore is
 
         VCNFTIssuerHierarchy.__VCNFTIssuerHierarchy_init(initialOwner_);
         VCNFTAccountFactory.__VCNFTAccountFactory_init(simpleAccountImplementation_);
-        VCNFTMerkleTreeVerifier.__VCNFTMerkleTreeVerifier_init();
+        VCNFTVerifier.__VCNFTVerifier_init();
 
         sbtMode = sbtMode_;
     }

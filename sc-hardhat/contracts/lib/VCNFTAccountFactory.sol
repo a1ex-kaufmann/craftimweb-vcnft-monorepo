@@ -62,5 +62,9 @@ abstract contract VCNFTAccountFactory is Initializable, OwnableUpgradeable {
         return newTokenId;
     }
 
+    function calculateTokenId(bytes32 salt_) public view returns (uint256) {
+        return uint256(uint160(Clones.predictDeterministicAddress(simpleAccountImplementation, salt_)));
+    }
+
     uint256[49] private __gap;
 }

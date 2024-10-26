@@ -62,12 +62,12 @@ yarn hardhat task:deploy-simple-account --network <network name>
 
 4. Deploy VCNFTCore smart contract:
 ```
-yarn hardhat:deploy-vc-nft-core --name <token name> --symbol <token symbol> --initial-owner <owner address> --simple-account-implementation <SimpleAccount address> --network <network name>
+yarn hardhat task:deploy-vc-nft-core --name <token name> --symbol <token symbol> --initial-owner <owner address> --simple-account-implementation <SimpleAccount address> --network <network name>
 ```
 
 For upgrading:
 ```
-yarn hardhat:deploy-vc-nft-core --proxy-address <proxy-token sc address> --network <network name>
+yarn hardhat task:deploy-vc-nft-core --proxy-address <proxy-token sc address> --network <network name>
 ```
 
 5. Mint NFT
@@ -75,7 +75,17 @@ yarn hardhat:deploy-vc-nft-core --proxy-address <proxy-token sc address> --netwo
 yarn hardhat task:mint-vc-nft --issuer <issuer address> --target <target address> --merkle-root <merkle root hash> --nonce <nonce number> --token-contract <VCNFTCore address> --network <network name>
 ```
 
-6. Verify in the explorer (optional)
+6. Deploy StakeNFT smart contract:
+```
+yarn hardhat task:deploy-stake-nft --owner <owner address> --staking-token <VCNFTCore address> --network <network name>
+```
+
+For upgrading:
+```
+yarn hardhat task:deploy-stake-nft --proxy-address <proxy-token sc address> --network <network name>
+```
+
+7. Verify in the explorer (optional)
 ```
 yarn hardhat verify <contract address> --network <network name>
 ```

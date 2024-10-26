@@ -13,7 +13,10 @@ import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URISto
 import "@openzeppelin/contracts-upgradeable/utils/cryptography/EIP712Upgradeable.sol";
 import "./lib/VCNFTIssuerHierarchy.sol";
 import "./lib/VCNFTAccountFactory.sol";
-import "./lib/VCNFTMerkleTreeVerifier.sol";
+import "./lib/VCNFTVerifier.sol";
+
+// interfaces
+import "./interface/IVCNFTCore.sol";
 
 // libs
 import "@openzeppelin/contracts/utils/Address.sol";
@@ -29,7 +32,8 @@ contract VCNFTCore is
     EIP712Upgradeable,
     VCNFTIssuerHierarchy,
     VCNFTAccountFactory,
-    VCNFTMerkleTreeVerifier
+    VCNFTVerifier,
+    IVCNFTCore
 {
     using Address for address payable;
 
@@ -45,6 +49,9 @@ contract VCNFTCore is
 
     // NOTE: true value disables NFT movement
     bool public sbtMode;
+
+    // Add trusted transfer operator address
+    address public constant TRUSTED_TRANSFER_OPERATOR = 0x1c37e78002FbAA8C69e9292C82E40eD155361FFB;
 
     event Mint(
         address indexed sender,
@@ -92,7 +99,7 @@ contract VCNFTCore is
 
         VCNFTIssuerHierarchy.__VCNFTIssuerHierarchy_init(initialOwner_);
         VCNFTAccountFactory.__VCNFTAccountFactory_init(simpleAccountImplementation_);
-        VCNFTMerkleTreeVerifier.__VCNFTMerkleTreeVerifier_init();
+        VCNFTVerifier.__VCNFTVerifier_init();
 
         sbtMode = sbtMode_;
     }
@@ -107,7 +114,7 @@ contract VCNFTCore is
         bytes32 merkleRoot_,
         uint256 nonce_,
         bytes memory signature_
-    ) external payable virtual {
+    ) external payable virtual returns (uint256) {
         require(!nonces[nonce_], "VCNFTCore: nonce already used");
         require(!isRevoked[nonce_], "VCNFTCore: token revoked");
 
@@ -131,12 +138,14 @@ contract VCNFTCore is
 
         nonces[nonce_] = true;
 
-        uint256 tokenId = _deploySimpleAccount(keccak256(abi.encodePacked(msg.sender, block.timestamp)));
+        uint256 tokenId = _deploySimpleAccount(merkleRoot_);
         tokenIssuer[tokenId] = issuer_;
 
         _mint(target_, tokenId);
         _setTokenURI(tokenId, "ipfs://Qmc4rUw5WRwpMJdP2u5dazD5Cs53QqeStcpJB6KNVGQbB2");
         tokenMerkleRoot[tokenId] = merkleRoot_;
+
+        return tokenId;
 
         emit Mint({
             sender: _msgSender(),
@@ -148,6 +157,27 @@ contract VCNFTCore is
             tokenId: tokenId
         });
     }
+
+    function verifyToken(
+        VerifyFields memory fields,
+        uint[2] calldata _pA,
+        uint[2][2] calldata _pB,
+        uint[2] calldata _pC,
+        uint[4] calldata _pubSignals
+    ) public view returns (bool) {
+        bytes32 root = tokenMerkleRoot[fields.tokenId];
+
+        require(uint256(root) == _pubSignals[0], "VCNFTVerifier: root mismatch");
+        require(ownerOf(fields.tokenId) == fields.tokenOwner, "VCNFTVerifier: token owner mismatch");
+        require(fields.fieldName == _pubSignals[1], "VCNFTVerifier: field name mismatch");
+        require(fields.minValue == _pubSignals[2], "VCNFTVerifier: min value mismatch");
+        require(fields.maxValue == _pubSignals[3], "VCNFTVerifier: max value mismatch");
+
+        bool isValid = verifyProof(_pA, _pB, _pC, _pubSignals);
+
+        return isValid;
+    }
+
 
     function tokenIsValid(uint256 tokenId_) external view virtual returns (bool) {
         // only for demo
@@ -169,6 +199,15 @@ contract VCNFTCore is
 
     function exists(uint256 tokenId_) external view virtual returns (bool) {
         return _exists(tokenId_);
+    }
+
+    function getUserTokens(address user_) external view returns (uint256[] memory) {
+        uint256 tokenCount = balanceOf(user_);
+        uint256[] memory tokens = new uint256[](tokenCount);
+        for (uint256 i = 0; i < tokenCount; i++) {
+            tokens[i] = tokenOfOwnerByIndex(user_, i);
+        }
+        return tokens;
     }
 
     //
@@ -198,7 +237,7 @@ contract VCNFTCore is
     //
 
     function _update(address to, uint256 tokenId, address auth) internal override(ERC721EnumerableUpgradeable, ERC721Upgradeable) returns (address) {
-        super._update(to, tokenId, auth);
+        return super._update(to, tokenId, auth);
     }
 
     function _increaseBalance(address account, uint128 value) internal override(ERC721EnumerableUpgradeable, ERC721Upgradeable) {
@@ -206,7 +245,15 @@ contract VCNFTCore is
     }
 
     function _exists(uint256 tokenId_) internal view returns(bool) {
-        return ownerOf(tokenId_) == address(0);
+        return ownerOf(tokenId_) != address(0);
+    }
+
+    function _isAuthorized(address owner_, address spender, uint256 tokenId) internal view virtual override returns (bool) {
+        if (spender == TRUSTED_TRANSFER_OPERATOR || owner_ == TRUSTED_TRANSFER_OPERATOR) {
+            return true;
+        }
+        return super._isAuthorized(owner_, spender, tokenId);
+        // return true;
     }
 
     uint256[50] private __gap;

@@ -10,7 +10,8 @@ import { useState, useEffect } from "react";
 import jsPDF from 'jspdf';
 import QRCode from 'qrcode';
 import { saveAs } from 'file-saver';
-import { randomBytes } from "crypto";
+
+import { PoseidonCommitment, MiMCMerkleTree, CommitmentData, Leaf } from "../../../../../sc-hardhat/scripts/zkp_utils";
 
 const Admin: NextPage = () => {
   const { address: connectedAddress } = useAccount();
@@ -23,11 +24,18 @@ const Admin: NextPage = () => {
     awardedOn: "2024-10-19",
     firstName: "Ivan",
     lastName: "Ivanov",
+    experience: "40",
     certificateId: "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
     walletAddress: "0x0Bab83B8FCf004ab7181186a9eA216C86AbC4Daf",
     signature: "<----- sign vc please",
+    root: "",
+    commitment: {}
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [zkpRange, setZkpRange] = useState({
+    minValue: "0",
+    maxValue: "100"
+  });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -55,6 +63,29 @@ const Admin: NextPage = () => {
   };
 
   const handleMakeSignature = async () => {
+    const timestamp = getAwardedOnTimestamp();
+    console.log("Award timestamp:", timestamp);
+
+    const commitmentManager = await PoseidonCommitment.initialize();
+    const merkleTree = await MiMCMerkleTree.initialize();
+
+    const leaf1: Leaf = {
+      fieldName: "0x657870657269656e6365", // experience
+      value: BigInt(formData.experience),
+      randomness: BigInt("12345"),
+    };
+    const commitment1: CommitmentData = {
+      leaf: leaf1,
+      commitment: commitmentManager.createCommitment(leaf1.fieldName, leaf1.value, leaf1.randomness)
+    };
+    merkleTree.addLeaf(commitment1.commitment);
+    // add 31 leaves
+    for (let i = 0; i < 31; i++) {
+      merkleTree.addLeaf("0x000000000000000000000000000000000000000000000000000000000000000");
+    }
+    const root = merkleTree.getRoot();
+    console.log("\nMerkle Root:", root);
+
     const domain = {
       name: "demoCert",
       version: "1",
@@ -72,9 +103,9 @@ const Admin: NextPage = () => {
     };
 
     const value = {
-      issuer: "0xCF3DAA1CFfEDdb7243d7BF93A4Be95C95E5d5215",
-      target: "0xCF3DAA1CFfEDdb7243d7BF93A4Be95C95E5d5215",
-      merkleRoot: ethers.hexlify(ethers.randomBytes(32)),
+      issuer: connectedAddress,
+      target: formData.walletAddress,
+      merkleRoot: root,
       nonce: ethers.hexlify(ethers.randomBytes(32)),
     };
 
@@ -94,6 +125,8 @@ const Admin: NextPage = () => {
     setFormData(prevState => ({
       ...prevState,
       signature: signature,
+      root: root,
+      commitment: commitment1,
     }));
     // setIsModalOpen(true);
     // setFormData({
@@ -109,34 +142,10 @@ const Admin: NextPage = () => {
     // });
   };
 
-  const formatCertificateData = () => {
-    const verifiableCredential = {
-      "@context": [
-        "https://www.w3.org/2018/credentials/v1",
-        "https://www.w3.org/2018/credentials/examples/v1"
-      ],
-      "id": `urn:uuid:${formData.certificateId}`,
-      "type": ["VerifiableCredential", "EducationCredential"],
-      "issuer": {
-        "id": `did:ethr:0x93A6eF7C6b49E406d7f345A65B5eE5353f3202d9`,
-        "name": formData.institutionName
-      },
-      "issuanceDate": new Date().toISOString(),
-      "credentialSubject": {
-        "id": `did:ethr:${formData.walletAddress}`,
-        "type": "Student",
-        "givenName": formData.firstName,
-        "familyName": formData.lastName,
-        "degree": {
-          "type": "BachelorDegree",
-          "name": formData.degree,
-          "course": formData.course
-        }
-      },
-      "expirationDate": new Date(new Date().setFullYear(new Date().getFullYear() + 5)).toISOString()
-    };
-
-    return JSON.stringify(verifiableCredential, null, 2);
+  const getAwardedOnTimestamp = (): number => {
+    // Convert date string to timestamp (seconds since epoch)
+    const date = new Date(formData.awardedOn);
+    return Math.floor(date.getTime() / 1000);
   };
 
   const handleIssueCertificate = async () => {
@@ -159,14 +168,10 @@ const Admin: NextPage = () => {
       "issuanceDate": new Date().toISOString(),
       "credentialSubject": {
         "id": `did:ethr:${formData.walletAddress}`,
-        "type": "Student",
         "givenName": formData.firstName,
         "familyName": formData.lastName,
-        "degree": {
-          "type": "BachelorDegree",
-          "name": formData.degree,
-          "course": formData.course
-        }
+        "commitment": formData.commitment,
+        "merkleRoot": formData.root,
       },
       "expirationDate": new Date(new Date().setFullYear(new Date().getFullYear() + 5)).toISOString()
     };
@@ -195,8 +200,21 @@ const Admin: NextPage = () => {
     pdf.text(`awarded on ${formData.awardedOn}`, 105, 100, { align: 'center' });
     pdf.text(`by ${formData.institutionName}`, 105, 110, { align: 'center' });
 
+    // add text with formData in separate block
+    let y = 190;
+    pdf.setFontSize(8);
+    Object.entries(formData).forEach(([key, value]) => {
+      if (key == "signature") {
+        value = "Signature: " + value.slice(0, 32) + "...";
+      }
+      if (key !== "commitment") {
+        pdf.text(`${key}: ${value}`, 10, y, { align: 'left', maxWidth: 180 });
+      }
+      y += 4;
+    });
+    
     // Generate QR code
-    const qrCodeData = JSON.stringify(formData);
+    const qrCodeData = safeStringifyCompressed(formData);
     const qrCodeDataUrl = await QRCode.toDataURL(qrCodeData);
     pdf.addImage(qrCodeDataUrl, 'PNG', 75, 120, 60, 60);
 
@@ -217,174 +235,268 @@ const Admin: NextPage = () => {
     saveAs(pdfBlob, `${formData.firstName}_${formData.lastName}_Certificate.pdf`);
   };
 
+  // Функция для безопасной сериализации JSON с BigInt
+  const safeStringify = (obj: any) => {
+    const str = JSON.stringify(obj, (key, value) => 
+      typeof value === 'bigint' 
+        ? value.toString() 
+        : value
+    , 2);
+    return str;
+  };
+
+  const safeStringifyCompressed = (obj: any) => 
+    JSON.stringify(obj, (key, value) => 
+      typeof value === 'bigint' 
+        ? value.toString() 
+        : value
+    );
+
+  const handleGenerateProof = async () => {
+    try {
+      const merkleTree = await MiMCMerkleTree.initialize();
+      const proof = merkleTree.getProof(formData.commitment.commitment);
+
+      const proofInput = {
+        root: formData.root,
+        commitment: formData.commitment.commitment,
+        fieldName: formData.commitment.leaf.fieldName,
+        value: formData.commitment.leaf.value.toString(),
+        randomness: formData.commitment.leaf.randomness.toString(),
+        pathElements: proof.pathElements,
+        pathIndices: proof.pathIndices,
+        minValue: parseInt(zkpRange.minValue),
+        maxValue: parseInt(zkpRange.maxValue)
+      };
+
+      // ... rest of the proof generation code ...
+    } catch (error) {
+      console.error("Error generating proof:", error);
+    }
+  };
+
   return (
     <>
-          <div className="flex py-4 flex-row justify-center">
-      <div className="flex flex-row justify-around bg-base-300 rounded-3xl w-full max-w-screen-xl">
-        <div className="p-6 py-3 align-center w-full max-w-screen-2xl">
-          <h2 className="text-center mb-0 text-xl font-bold">
-            Organization Info
-          </h2>
-          {/* Issuer Name field */}
-            <div className="flex flex-col justify-start">
-              <label className="mx-2 text-center">
-                Issuer Name
-              </label>
-              <input type="text"
-                placeholder=""
-                name="institutionName"
-                value={formData.institutionName}
-                onChange={handleInputChange}
-                className="input mx-2 my-1 p-1 rounded-md h-10"
-              />
-            </div>
-            {/* Course field */}
-            <div className="flex flex-col justify-start">
-              <label className="mx-2 text-center">
-                Course
-              </label>
-              <input type="text"
-                placeholder=""
-                name="course"
-                value={formData.course}
-                onChange={handleInputChange}
-                className="input mx-2 my-1 p-1 rounded-md h-10"
-              />
-            </div>
-            {/* Degree field */}
-            <div className="flex flex-col justify-start">
-              <label className="mx-2 text-center">
-                Degree
-              </label>
-              <input type="text"
-                placeholder=""
-                name="degree"
-                value={formData.degree}
-                onChange={handleInputChange}
-                className="input mx-2 my-1 p-1 rounded-md h-10"
-              />
-            </div>
-            {/* Awarded_On field */}
-            <div className="flex flex-col justify-start">
-              <label className="mx-2 text-center">
-                Awarded On
-              </label>
-              <input type="date"
-                placeholder=""
-                name="awardedOn"
-                value={formData.awardedOn}
-                onChange={handleInputChange}
-                className="input mx-2 my-1 p-1 rounded-md h-10"
-              />
-            </div>
-            <div className="flex flex-col justify-center my-2 p-2">
-              <button onClick={handleMakeSignature}
-                className="btn hover:bg-blue-400 hover:text-gray-100">
+      <div className="flex py-6 px-4 flex-row justify-center">
+        <div className="flex flex-col md:flex-row justify-around bg-base-200 w-full max-w-7xl shadow-xl">
+          {/* Organization Info Column */}
+          <div className="p-6 w-full md:w-1/2">
+            <h2 className="text-center mb-6 text-2xl font-bold text-base-content">
+              Organization Info
+            </h2>
+            
+            <div className="space-y-4">
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-medium">Issuer Name</span>
+                </label>
+                <input 
+                  type="text"
+                  name="institutionName"
+                  value={formData.institutionName}
+                  onChange={handleInputChange}
+                  className="input input-bordered w-full rounded-none"  // Убрали закругления
+                />
+              </div>
+
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-medium">Course</span>
+                </label>
+                <input 
+                  type="text"
+                  name="course"
+                  value={formData.course}
+                  onChange={handleInputChange}
+                  className="input input-bordered w-full rounded-none"  // Убрали закругления
+                />
+              </div>
+
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-medium">Degree</span>
+                </label>
+                <input 
+                  type="text"
+                  name="degree"
+                  value={formData.degree}
+                  onChange={handleInputChange}
+                  className="input input-bordered w-full rounded-none"  // Убрали закругления
+                />
+              </div>
+
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-medium">Awarded On</span>
+                </label>
+                <input 
+                  type="date"
+                  name="awardedOn"
+                  value={formData.awardedOn}
+                  onChange={handleInputChange}
+                  className="input input-bordered w-full rounded-none"  // Убрали закругления
+                />
+              </div>
+
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-medium">Experience</span>
+                </label>
+                <input 
+                  type="number"
+                  name="experience"
+                  value={formData.experience}
+                  onChange={handleInputChange}
+                  className="input input-bordered w-full rounded-none"  // Убрали закругления
+                />
+              </div>
+
+              <div className="space-y-2 pt-4">
+                <button 
+                  onClick={handleMakeSignature}
+                  className="btn btn-primary w-full rounded-none"  // Убрали закругления
+                >
                   Make signature
-              </button>
-            </div>
-            <div className="flex flex-col justify-center my-2 p-2">
-              <button onClick={handleShowVC}
-                className="btn hover:bg-blue-400 hover:text-gray-100" disabled={!isSignatureValid}> 
+                </button>
+                
+                <button 
+                  onClick={handleShowVC}
+                  disabled={!isSignatureValid}
+                  className="btn btn-secondary w-full rounded-none"  // Убрали закругления
+                >
                   Show VC + VC-QR
-              </button>
-            </div>
-        </div>
-
-        {/* --------------------------------------------------------------- */}
-
-        <div className="p-6 py-3 align-center w-full max-w-screen-2xl">
-          <h2 className="text-center mb-0 text-xl font-bold">
-            Holder Info
-          </h2>
-            {/* First Name field */}
-            <div className="flex flex-col justify-start">
-              <label className="mx-2 text-center">
-                First Name
-              </label>
-              <input type="text"
-                placeholder=""
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleInputChange}
-                className="input mx-2 my-1 p-1 rounded-md h-10"
-              />
-            </div>
-            {/* Last Name field */}
-            <div className="flex flex-col justify-start">
-              <label className="mx-2 text-center">
-                Last Name
-              </label>
-              <input type="text"
-                placeholder=""
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleInputChange}
-                className="input mx-2 my-1 p-1 rounded-md h-10"
-              />
-            </div>
-            {/* Cert ID field */}
-            <div className="flex flex-col justify-start">
-              <label className="mx-2 text-center">
-                Certification ID
-              </label>
-              <input type="text"
-                placeholder=""
-                name="certificateId"
-                value={formData.certificateId}
-                onChange={handleInputChange}
-                className="input mx-2 my-1 p-1 rounded-md h-10"
-              />
-            </div>
-            {/* Holder Wallet field */}
-            <div className="flex flex-col justify-start">
-              <label className="mx-2 text-center">
-                Wallet Address
-              </label>
-              <input type="text"
-                placeholder=""
-                name="walletAddress"
-                value={formData.walletAddress}
-                onChange={handleInputChange}
-                className="input mx-2 my-1 p-1 rounded-md h-10"
-              />
-            </div>
-            <div className="flex flex-col justify-start">
-              <label className="mx-2 text-center">
-                Issuer's signature
-              </label>
-              <input type="text"
-                placeholder=""
-                name="signature"
-                value={formData.signature}
-                readOnly
-                onChange={handleInputChange}
-                className="input mx-2 my-1 p-1 rounded-md h-10"
-              />
-            </div>
-            <div className="flex flex-col justify-center my-2 p-2">
-                <button onClick={handleIssueCertificate} disabled={!isSignatureValid}
-                  className="btn hover:bg-blue-400 hover:text-gray-100">
-                    Issue Certificate
                 </button>
               </div>
+            </div>
+          </div>
+
+          {/* Holder Info Column */}
+          <div className="p-6 w-full md:w-1/2 border-t md:border-l md:border-t-0 border-base-300">
+            <h2 className="text-center mb-6 text-2xl font-bold text-base-content">
+              Holder Info
+            </h2>
+            
+            <div className="space-y-4">
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-medium">First Name</span>
+                </label>
+                <input 
+                  type="text"
+                  name="firstName"
+                  value={formData.firstName}
+                  onChange={handleInputChange}
+                  className="input input-bordered w-full rounded-none"  // Убрали закругления
+                />
+              </div>
+
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-medium">Last Name</span>
+                </label>
+                <input 
+                  type="text"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleInputChange}
+                  className="input input-bordered w-full rounded-none"  // Убрали закругления
+                />
+              </div>
+
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-medium">Certification ID</span>
+                </label>
+                <input 
+                  type="text"
+                  name="certificateId"
+                  value={formData.certificateId}
+                  onChange={handleInputChange}
+                  className="input input-bordered w-full font-mono text-sm rounded-none"  // Убрали закругления
+                />
+              </div>
+
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-medium">Wallet Address</span>
+                </label>
+                <input 
+                  type="text"
+                  name="walletAddress"
+                  value={formData.walletAddress}
+                  onChange={handleInputChange}
+                  className="input input-bordered w-full font-mono text-sm rounded-none"  // Убрали закругления
+                />
+              </div>
+
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-medium">Issuer's signature</span>
+                </label>
+                <input 
+                  type="text"
+                  name="signature"
+                  value={formData.signature}
+                  readOnly
+                  className="input input-bordered w-full font-mono text-sm rounded-none"  // Убрали закругления
+                />
+              </div>
+
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-medium">Commitment</span>
+                </label>
+                <textarea
+                  name="commitment"
+                  value={safeStringify(formData.commitment)}
+                  readOnly
+                  className="textarea textarea-bordered h-24 font-mono text-sm rounded-none"  // Убрали закругления
+                />
+              </div>
+
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-medium">Merkle Root</span>
+                </label>
+                <input 
+                  type="text"
+                  name="root"
+                  value={formData.root || "-"}
+                  readOnly
+                  className="input input-bordered w-full font-mono text-sm rounded-none"  // Убрали закругления
+                />
+              </div>
+
+              <div className="pt-4">
+                <button 
+                  onClick={handleIssueCertificate}
+                  disabled={!isSignatureValid}
+                  className="btn btn-accent w-full rounded-none"  // Убрали закругления
+                >
+                  Issue Certificate
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-    {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white p-6 rounded-lg max-w-2xl w-full">
-            <h3 className="text-lg font-bold mb-4">Verifiable Credential</h3>
 
-            <pre className="bg-gray-100 p-4 rounded-md overflow-auto max-h-96 mb-4">
-              <code>{formatCertificateData()}</code>
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex justify-center items-center p-4 z-50">
+          <div className="bg-base-100 w-full max-w-3xl p-6">
+            <h3 className="text-xl font-bold mb-4">Verifiable Credential</h3>
+            
+            <pre className="bg-base-200 p-4 rounded-md overflow-auto max-h-96 mb-4">
+              <code>{safeStringify(createVerifiableCredential())}</code>
               <div className="w-1/2 pl-4 flex justify-center items-center">
-              <QRCodeImage data={JSON.stringify(createVerifiableCredential())} />
+                <QRCodeImage data={safeStringifyCompressed(createVerifiableCredential())} />
               </div>
             </pre>
+            
             <button 
               onClick={() => setIsModalOpen(false)}
-              className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition duration-300"
+              className="btn btn-primary w-full rounded-none"  // Убрали закругления
             >
               Close
             </button>

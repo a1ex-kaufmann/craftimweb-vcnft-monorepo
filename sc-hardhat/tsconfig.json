@@ -7,6 +7,6 @@
     "outDir": "dist",
     "resolveJsonModule": true
   },
-  "include": ["./scripts", "./test", "./typechain"],
+  "include": ["./scripts", "./test", "./typechain", "old/generateMerkleTree.ts", "old/getBalance.ts", "old/merkleTree.ts", "old/pedersen_native.ts", "old/pedersenHash.ts", "old/poseidon_utils.ts", "old/test_pedersen_fast.ts", "old/test_pedersen.ts", "old/test_poseidon_commitment.ts", "old/test_poseidon.ts", "old/testPedersen.ts", "old/testMerkleTree.ts"],
   "files": ["hardhat.config.ts"]
 }
