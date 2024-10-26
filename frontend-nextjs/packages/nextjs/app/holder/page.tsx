@@ -9,7 +9,7 @@ import { Address } from "~~/components/scaffold-eth";
 import { useScaffoldContract } from "~~/hooks/scaffold-eth";
 import dynamic from 'next/dynamic';
 import QrScanner from 'qr-scanner';
-import { PoseidonCommitment, MiMCMerkleTree, SnarkProver, SnarkProverPath } from "../../../../../sc-hardhat/scripts/zkp_utils";
+import { PoseidonCommitment, MiMCMerkleTree, SnarkProver, SnarkProverPath } from "../../utils/zkp_utils";
 import { notification } from "~~/utils/scaffold-eth";
 
 // Добавляем импорты для wasm и zkey файлов

@@ -11,7 +11,7 @@ import jsPDF from 'jspdf';
 import QRCode from 'qrcode';
 import { saveAs } from 'file-saver';
 
-import { PoseidonCommitment, MiMCMerkleTree, CommitmentData, Leaf } from "../../../../../sc-hardhat/scripts/zkp_utils";
+import { PoseidonCommitment, MiMCMerkleTree, CommitmentData, Leaf } from "../../utils/zkp_utils";
 
 const Admin: NextPage = () => {
   const { address: connectedAddress } = useAccount();
